@@ -1,0 +1,20 @@
+﻿1) hdfs dfs -mkdir /temp_dir
+2) hdfs dfs -mkdir /temp_dir/sub_dir
+3) при удалении файлов и папок у юзера создается папка .Trash. Чтобы файлы удалялись минуя Trash нужно использовать флаг hdfs dfs -rm -skipTrash /path_to_directory
+4) hdfs dfs -touchz /temp_dir/sub_dir/temp_file
+5) hdfs dfs -rm -skipTrash /temp_dir/sub_dir/temp_file
+6) hdfs dfs -rm -r -skipTrash /temp_dir
+
+1) hdfs dfs -mkdir /new_folder 
+   hdfs dfs -put plato_the_republic /new_folder
+2) hdfs dfs -cat /new_folder/plato_the_republic  
+3) hdfs dfs -cat /new_folder/plato_the_republic | tail -n 5
+4) hdfs dfs -cat /new_folder/plato_the_republic | head -n 5
+5) hdfs dfs -cp /new_folder/plato_the_republic /
+
+2) На файл в 700KB на уменьшение реплик с 3 до 2 ушло 13 секунд, на увеличение с 2 до 3 - 10 секунд. hdfs dfs -setrep -w 2 /plato_the_republic
+3) hdfs fsck /plato_the_republic -files -blocks -locations
+4) hdfs fsck -blockId blk_1073741835 
+   Чтобы получить информацию о блоке, пришлось удалить generation_stamp (цифры после второго нижнего подчеркивания)
+
+
