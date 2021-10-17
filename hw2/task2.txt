@@ -1,0 +1,121 @@
+a)
+select x.artist_mb, x.artist_lastfm
+from artists x
+where x.scrobbles_lastfm IN (
+    select max(y.scrobbles_lastfm)
+    from artists y
+)
+
+The Beatles
+
+b)
+select tag, count(distinct artist_lastfm) as cnt
+from (
+SELECT artist_lastfm, tag
+    FROM artists
+    LATERAL VIEW explode(split(tags_lastfm, "; ")) itemTable AS tag
+) as tmp
+where tag <> ''
+group by tag
+order by cnt desc
+limit 10
+
+empty tag or seen live
+
+c)
+select *
+from (
+    /* для каждого тега отсортируем исполнителей */
+    select tmp.*, rank() over (partition by tag order by listeners_lastfm desc) as rnk
+    from (
+        /* достанем теги и вытянем в строки */
+        SELECT artist_lastfm, tag, listeners_lastfm
+        FROM artists
+        LATERAL VIEW explode(split(tags_lastfm, "; ")) itemTable AS tag
+    ) as tmp
+    where tag <> ''
+    and tag in (
+    /* топ 10 тегов */
+        select tag
+        from (
+            select tag, count(distinct artist_lastfm) as cnt
+            from (
+            SELECT artist_lastfm, tag
+                FROM artists
+                LATERAL VIEW explode(split(tags_lastfm, "; ")) itemTable AS tag
+            ) as z
+            where tag <> ''
+            group by tag
+            order by cnt desc
+            limit 10
+        ) as x
+    )
+) as y
+/* оставляем для каждого тега топ исполнителя по слушателям */
+where rnk = 1
+
+Jason Derülo	All
+Coldplay	alternative
+Coldplay	electronic
+Radiohead	experimental
+Rihanna		female vocalists
+Coldplay	indie
+Coldplay	pop
+Coldplay	rock
+Coldplay	seen live
+Diddy - Dirty Money	under 2000 listeners
+
+d)
+берем топ 10 стран, по количеству исполнителей, и для каждой страны выводим топ исполнителя
+select *
+from (
+    select distinct artist_lastfm, country_lastfm, rank() over (partition by country_lastfm order by listeners_lastfm desc) as rnk
+    from artists
+    where country_lastfm in (
+        select country_lastfm
+        from (
+            select country_lastfm, count(artist_lastfm) as cnt
+            from artists
+            where country_lastfm <> ''
+            group by country_lastfm
+            order by cnt desc
+            limit 10
+        ) x
+    )
+) y
+where rnk = 1
+
+
+1	Benny Benassi	Italy	1
+2	Coldplay	United Kingdom	1
+3	Daft Punk	France	1
+4	Drake	Canada	1
+5	Ludwig van Beethoven	Germany	1
+6	Mono	Japan	1
+7	Nightwish	Finland	1
+8	Pyotr Ilyich Tchaikovsky	Russia	1
+9	Red Hot Chili Peppers	United States	1
+10	The Cardigans	Sweden	1
+
+посмотреть топ исполнителей по жанру
+
+select *
+from (
+select artist_lastfm, rank() over (order by scrobbles_lastfm desc) as rnk
+from artists
+where lower(tags_lastfm) like '%post-punk%'
+and lower(tags_lastfm) not like '%revival%'
+) x
+where rnk <= 10
+
+
+1	David Bowie	1
+2	Placebo	2
+3	Depeche Mode	3
+4	The Smiths	4
+5	The Cure	5
+6	The xx	6
+7	Modest Mouse	7
+8	Pixies	8
+9	Joy Division	9
+10	MGMT	10

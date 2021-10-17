@@ -1,0 +1,6 @@
+1) create table artists (mbid string, artist_mb string, artist_lastfm string, country_mb string, country_lastfm string, tags_mb string, tags_lastfm string, listeners_lastfm int, scrobbles_lastfm int, ambiguous_artist string) row format delimited FIELDS TERMINATED BY ',' tblproperties("skip.header.line.count"="1");
+2) load data local inpath '/opt/artists.csv' overwrite into table artists;
+3) /opt/hive/bin/beeline -u jdbc:hive2://localhost:10000
+4) docker cp ~/Downloads/artists.csv docker-hadoop-hive-parquet_hive-server_1:opt/artists.csv
+5) docker-compose exec hive-server bash
+
